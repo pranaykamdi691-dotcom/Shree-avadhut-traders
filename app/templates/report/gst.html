@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block title %}GST Report - GST App{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <h2>GST Report</h2>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" class="row g-3">
+            <div class="col-md-4">
+                <label for="start_date" class="form-label">From Date</label>
+                <input type="date" class="form-control" id="start_date" name="start_date" value="{{ start_date or '' }}">
+            </div>
+            <div class="col-md-4">
+                <label for="end_date" class="form-label">To Date</label>
+                <input type="date" class="form-control" id="end_date" name="end_date" value="{{ end_date or '' }}">
+            </div>
+            <div class="col-md-4">
+                <label>&nbsp;</label>
+                <button type="submit" class="btn btn-primary w-100">Filter</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-light">
+            <div class="card-body">
+                <h6 class="card-title">Total Sales</h6>
+                <h3>₹{{ "%.2f"|format(total_sales) }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-light">
+            <div class="card-body">
+                <h6 class="card-title">CGST</h6>
+                <h3>₹{{ "%.2f"|format(total_cgst) }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-light">
+            <div class="card-body">
+                <h6 class="card-title">SGST</h6>
+                <h3>₹{{ "%.2f"|format(total_sgst) }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-light">
+            <div class="card-body">
+                <h6 class="card-title">Total GST</h6>
+                <h3>₹{{ "%.2f"|format(total_gst) }}</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-12">
+        <a href="{{ url_for('report.gst_report_pdf') }}?start_date={{ start_date or '' }}&end_date={{ end_date or '' }}" class="btn btn-info">Download PDF</a>
+    </div>
+</div>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Invoice #</th>
+            <th>Customer</th>
+            <th>Date</th>
+            <th>Sales Amount</th>
+            <th>CGST</th>
+            <th>SGST</th>
+            <th>IGST</th>
+            <th>Total GST</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for invoice in invoices %}
+        <tr>
+            <td><a href="{{ url_for('invoice.view_invoice', invoice_id=invoice.id) }}">{{ invoice.invoice_number }}</a></td>
+            <td>{{ invoice.customer.name }}</td>
+            <td>{{ invoice.invoice_date.strftime('%Y-%m-%d') }}</td>
+            <td>₹{{ "%.2f"|format(invoice.subtotal) }}</td>
+            <td>₹{{ "%.2f"|format(invoice.cgst) }}</td>
+            <td>₹{{ "%.2f"|format(invoice.sgst) }}</td>
+            <td>₹{{ "%.2f"|format(invoice.igst) }}</td>
+            <td>₹{{ "%.2f"|format(invoice.cgst + invoice.sgst + invoice.igst) }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% if not invoices %}
+<div class="alert alert-info">No invoices found for the selected period.</div>
+{% endif %}
+{% endblock %}

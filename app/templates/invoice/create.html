@@ -1,0 +1,209 @@
+{% extends "base.html" %}
+
+{% block title %}Create Invoice - GST App{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <h2>Create New Invoice</h2>
+        <form method="POST" id="invoiceForm">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5>Invoice Details</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="customer_id" class="form-label">Customer</label>
+                            <select class="form-select" id="customer_id" name="customer_id" required>
+                                <option value="">Select Customer</option>
+                                {% for customer in customers %}
+                                <option value="{{ customer.id }}">{{ customer.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="invoice_date" class="form-label">Invoice Date</label>
+                            <input type="date" class="form-control" id="invoice_date" name="invoice_date" value="{{ now().strftime('%Y-%m-%d') }}" required>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="due_date" class="form-label">Due Date</label>
+                            <input type="date" class="form-control" id="due_date" name="due_date">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5>Invoice Items</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table" id="itemsTable">
+                        <thead>
+                            <tr>
+                                <th>Description</th>
+                                <th>Quantity</th>
+                                <th>Unit Price</th>
+                                <th>GST %</th>
+                                <th>Line Total</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="itemsBody">
+                            <tr class="item-row">
+                                <td><input type="text" class="form-control description" name="description[]" placeholder="Item description" required></td>
+                                <td><input type="number" class="form-control quantity" name="quantity[]" placeholder="Qty" step="0.01" required></td>
+                                <td><input type="number" class="form-control unit_price" name="unit_price[]" placeholder="Price" step="0.01" required></td>
+                                <td><select class="form-select gst_rate" name="gst_rate[]">
+                                    <option value="0">0%</option>
+                                    <option value="5">5%</option>
+                                    <option value="12">12%</option>
+                                    <option value="18" selected>18%</option>
+                                    <option value="28">28%</option>
+                                </select></td>
+                                <td><span class="line-total">₹0.00</span></td>
+                                <td><button type="button" class="btn btn-sm btn-danger removeRow">Remove</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <button type="button" class="btn btn-sm btn-success" id="addRow">Add Item</button>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6"></div>
+                        <div class="col-md-6">
+                            <table class="table">
+                                <tr>
+                                    <td><strong>Subtotal:</strong></td>
+                                    <td><strong id="subtotal">₹0.00</strong></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>CGST (50%):</strong></td>
+                                    <td><strong id="cgst">₹0.00</strong></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>SGST (50%):</strong></td>
+                                    <td><strong id="sgst">₹0.00</strong></td>
+                                </tr>
+                                <tr class="table-active">
+                                    <td><strong>Total:</strong></td>
+                                    <td><strong id="total">₹0.00</strong></td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label for="notes" class="form-label">Notes</label>
+                <textarea class="form-control" id="notes" name="notes" rows="3" placeholder="Additional notes..."></textarea>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Create Invoice</button>
+            <a href="{{ url_for('invoice.list_invoices') }}" class="btn btn-secondary">Cancel</a>
+        </form>
+    </div>
+</div>
+
+<script>
+function now() {
+    return new Date();
+}
+
+function calculateLineTotal(row) {
+    const quantity = parseFloat(row.querySelector('.quantity').value) || 0;
+    const unitPrice = parseFloat(row.querySelector('.unit_price').value) || 0;
+    const gstRate = parseFloat(row.querySelector('.gst_rate').value) || 0;
+    
+    const lineTotal = quantity * unitPrice;
+    const lineGst = lineTotal * (gstRate / 100);
+    const lineAmount = lineTotal + lineGst;
+    
+    row.querySelector('.line-total').textContent = '₹' + lineAmount.toFixed(2);
+    calculateTotals();
+}
+
+function calculateTotals() {
+    let subtotal = 0;
+    let totalGst = 0;
+    
+    document.querySelectorAll('.item-row').forEach(row => {
+        const quantity = parseFloat(row.querySelector('.quantity').value) || 0;
+        const unitPrice = parseFloat(row.querySelector('.unit_price').value) || 0;
+        const gstRate = parseFloat(row.querySelector('.gst_rate').value) || 0;
+        
+        const lineTotal = quantity * unitPrice;
+        const lineGst = lineTotal * (gstRate / 100);
+        
+        subtotal += lineTotal;
+        totalGst += lineGst;
+    });
+    
+    const cgst = totalGst / 2;
+    const sgst = totalGst / 2;
+    const total = subtotal + totalGst;
+    
+    document.getElementById('subtotal').textContent = '₹' + subtotal.toFixed(2);
+    document.getElementById('cgst').textContent = '₹' + cgst.toFixed(2);
+    document.getElementById('sgst').textContent = '₹' + sgst.toFixed(2);
+    document.getElementById('total').textContent = '₹' + total.toFixed(2);
+}
+
+document.getElementById('addRow').addEventListener('click', function() {
+    const tableBody = document.getElementById('itemsBody');
+    const newRow = document.createElement('tr');
+    newRow.className = 'item-row';
+    newRow.innerHTML = `
+        <td><input type="text" class="form-control description" name="description[]" placeholder="Item description" required></td>
+        <td><input type="number" class="form-control quantity" name="quantity[]" placeholder="Qty" step="0.01" required></td>
+        <td><input type="number" class="form-control unit_price" name="unit_price[]" placeholder="Price" step="0.01" required></td>
+        <td><select class="form-select gst_rate" name="gst_rate[]">
+            <option value="0">0%</option>
+            <option value="5">5%</option>
+            <option value="12">12%</option>
+            <option value="18" selected>18%</option>
+            <option value="28">28%</option>
+        </select></td>
+        <td><span class="line-total">₹0.00</span></td>
+        <td><button type="button" class="btn btn-sm btn-danger removeRow">Remove</button></td>
+    `;
+    
+    newRow.querySelector('.removeRow').addEventListener('click', function() {
+        newRow.remove();
+        calculateTotals();
+    });
+    
+    newRow.querySelectorAll('input, select').forEach(field => {
+        field.addEventListener('change', function() { calculateLineTotal(newRow); });
+        field.addEventListener('keyup', function() { calculateLineTotal(newRow); });
+    });
+    
+    tableBody.appendChild(newRow);
+});
+
+document.querySelectorAll('.item-row input, .item-row select').forEach(field => {
+    field.addEventListener('change', function() {
+        const row = this.closest('.item-row');
+        calculateLineTotal(row);
+    });
+    field.addEventListener('keyup', function() {
+        const row = this.closest('.item-row');
+        calculateLineTotal(row);
+    });
+});
+
+document.querySelectorAll('.removeRow').forEach(btn => {
+    btn.addEventListener('click', function() {
+        this.closest('.item-row').remove();
+        calculateTotals();
+    });
+});
+</script>
+{% endblock %}

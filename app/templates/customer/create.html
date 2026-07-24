@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}Add Customer - GST App{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-6">
+        <h2>Add New Customer</h2>
+        <form method="POST" class="card">
+            <div class="card-body">
+                <div class="mb-3">
+                    <label for="name" class="form-label">Customer Name *</label>
+                    <input type="text" class="form-control" id="name" name="name" required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="email" class="form-label">Email</label>
+                    <input type="email" class="form-control" id="email" name="email">
+                </div>
+
+                <div class="mb-3">
+                    <label for="phone" class="form-label">Phone</label>
+                    <input type="tel" class="form-control" id="phone" name="phone" placeholder="+91 XXXXX XXXXX">
+                </div>
+
+                <div class="mb-3">
+                    <label for="gstin" class="form-label">GSTIN (15 digits)</label>
+                    <input type="text" class="form-control" id="gstin" name="gstin" maxlength="15" placeholder="27AABCT1234H2Z0">
+                </div>
+
+                <div class="mb-3">
+                    <label for="address" class="form-label">Address</label>
+                    <textarea class="form-control" id="address" name="address" rows="3"></textarea>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="city" class="form-label">City</label>
+                            <input type="text" class="form-control" id="city" name="city">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="state" class="form-label">State</label>
+                            <input type="text" class="form-control" id="state" name="state">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="pincode" class="form-label">Pincode</label>
+                    <input type="text" class="form-control" id="pincode" name="pincode" maxlength="6">
+                </div>
+
+                <div class="mb-3">
+                    <label for="customer_type" class="form-label">Customer Type</label>
+                    <select class="form-select" id="customer_type" name="customer_type">
+                        <option value="Individual">Individual</option>
+                        <option value="Business">Business</option>
+                        <option value="Government">Government</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Add Customer</button>
+                <a href="{{ url_for('customer.list_customers') }}" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

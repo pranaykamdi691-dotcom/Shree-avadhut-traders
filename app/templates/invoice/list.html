@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}Invoices - GST App{% endblock %}
+
+{% block content %}
+<div class="row mb-3">
+    <div class="col-md-12">
+        <h2>Invoices</h2>
+        <a href="{{ url_for('invoice.create_invoice') }}" class="btn btn-primary">Create New Invoice</a>
+    </div>
+</div>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Invoice #</th>
+            <th>Customer</th>
+            <th>Date</th>
+            <th>Amount</th>
+            <th>GST</th>
+            <th>Status</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for invoice in invoices %}
+        <tr>
+            <td>{{ invoice.invoice_number }}</td>
+            <td>{{ invoice.customer.name }}</td>
+            <td>{{ invoice.invoice_date.strftime('%Y-%m-%d') }}</td>
+            <td>₹{{ "%.2f"|format(invoice.subtotal) }}</td>
+            <td>₹{{ "%.2f"|format(invoice.sgst + invoice.cgst + invoice.igst) }}</td>
+            <td><span class="badge bg-primary">{{ invoice.status }}</span></td>
+            <td>
+                <a href="{{ url_for('invoice.view_invoice', invoice_id=invoice.id) }}" class="btn btn-sm btn-info">View</a>
+                <a href="{{ url_for('invoice.edit_invoice', invoice_id=invoice.id) }}" class="btn btn-sm btn-warning">Edit</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

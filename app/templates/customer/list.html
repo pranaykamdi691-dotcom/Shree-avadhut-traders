@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}Customers - GST App{% endblock %}
+
+{% block content %}
+<div class="row mb-3">
+    <div class="col-md-12">
+        <h2>Customers</h2>
+        <a href="{{ url_for('customer.create_customer') }}" class="btn btn-primary">Add New Customer</a>
+    </div>
+</div>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Phone</th>
+            <th>GSTIN</th>
+            <th>City</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for customer in customers %}
+        <tr>
+            <td>{{ customer.name }}</td>
+            <td>{{ customer.email or '-' }}</td>
+            <td>{{ customer.phone or '-' }}</td>
+            <td>{{ customer.gstin or '-' }}</td>
+            <td>{{ customer.city or '-' }}</td>
+            <td>
+                <a href="{{ url_for('customer.edit_customer', customer_id=customer.id) }}" class="btn btn-sm btn-warning">Edit</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
